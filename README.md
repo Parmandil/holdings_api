@@ -9,6 +9,14 @@ In order to initialize the data, start a rails console and run:
 and it will automatically import the data from data/holdings-list.csv into the
 database.
 
+Note that there is one data error in the sample CSV.
+In row 257, the market value does not match the price times the par value,
+like it should for valid data.
+The par value and market value are also ridiculously low.
+I suspect that there is something wrong with the data.
+The DataImporter currently handles invalid data just by logging it and moving on,
+so the other 699 holdings still import successfully.
+
 Then you can start the rails server and use normal JSON API requests to interact
 with the data. For example, you can run:
 ```
