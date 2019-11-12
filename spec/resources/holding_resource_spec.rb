@@ -70,4 +70,33 @@ describe HoldingResource, type: :request do
       end
     end
   end
+
+  describe "delete" do
+    subject { delete "/holdings/#{holding.id}", headers: headers }
+
+    it "returns 204" do
+      expect(response.status).to eq(204)
+    end
+
+    it "doesn't include any body" do
+      expect(response.body).to be_blank
+    end
+
+    it "deletes the holding" do
+      expect(Holding.count).to eq(4)
+      expect { Holding.find(holding.id) }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    context "when the holding doesn't exist" do
+      subject { delete "/holdings/#{holding.id + 1}", headers: headers }
+
+      it "returns 404" do
+        expect(response.status).to eq(404)
+      end
+
+      it "doesn't delete anything" do
+        expect(Holding.count).to eq(5)
+      end
+    end
+  end
 end
