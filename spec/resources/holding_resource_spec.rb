@@ -7,11 +7,11 @@ describe HoldingResource, type: :request do
 
   before do
     5.times { FactoryBot.create(:holding) }
-    subject
   end
 
   describe "index" do
     subject { get "/holdings", headers: headers }
+    before { subject }
 
     it "returns 200" do
       expect(response.status).to eq(200)
@@ -32,6 +32,7 @@ describe HoldingResource, type: :request do
 
   describe "show" do
     subject { get "/holdings/#{holding.id}", headers: headers }
+    before { subject }
 
     it "returns 200" do
       expect(response.status).to eq(200)
@@ -97,14 +98,16 @@ describe HoldingResource, type: :request do
     end
 
     it "returns 201" do
+      subject
       expect(response.status).to eq(201)
     end
 
     it "creates a new holding" do
-      expect(Holding.count).to eq(6)
+      expect { subject }.to change { Holding.count }.by(1)
     end
 
     it "successfully sets the data it sent over on the new holding" do
+      subject
       expect(holding.cusip).to eq(holding_attributes['cusip'])
       expect(holding.description).to eq(holding_attributes['description'])
       expect(holding.par_value.to_f).to be_within(0.001).of(holding_attributes['par-value'])
@@ -126,8 +129,74 @@ describe HoldingResource, type: :request do
     end
   end
 
+  describe "update" do
+    subject { put "/holdings/#{holding.id}", headers: headers, params: update_data }
+
+    let(:headers) do
+      {
+        "Accept" => "application/vnd.api+json",
+        "Content-Type" => "application/vnd.api+json"
+      }
+    end
+
+    let(:update_attributes) do
+      {
+        "maturity": 30000,
+        "accrued": 2.2,
+        "price": 105,
+        "market-value": 10500
+      }
+    end
+
+    let(:update_data) do
+      {
+        "data": {
+          "type": "holdings",
+          "id": "#{holding.id}",
+          "attributes": update_attributes
+        }
+      }.to_json
+    end
+
+    def reset_holding
+      holding.update(FactoryBot.attributes_for(:holding))
+    end
+
+    it "returns 200" do
+      subject
+      expect(response.status).to eq(200)
+    end
+
+    it "updates the selected attributes" do
+      reset_holding
+      expect(holding.maturity).not_to eq(30000)
+      expect(holding.accrued).not_to eq(2.2)
+      expect(holding.price).not_to eq(105)
+      expect(holding.market_value).not_to eq(10500)
+      subject
+      holding.reload
+      expect(holding.maturity).to eq(30000)
+      expect(holding.accrued).to eq(2.2)
+      expect(holding.price).to eq(105)
+      expect(holding.market_value).to eq(10500)
+    end
+
+    it "does not update the other attributes" do
+      reset_holding
+      old_cusip = holding.cusip
+      old_par_value = holding.par_value
+      old_yield = holding.yield
+      subject
+      holding.reload
+      expect(holding.cusip).to eq(old_cusip)
+      expect(holding.par_value).to eq(old_par_value)
+      expect(holding.yield).to eq(old_yield)
+    end
+  end
+
   describe "delete" do
     subject { delete "/holdings/#{holding.id}", headers: headers }
+    before { subject }
 
     it "returns 204" do
       expect(response.status).to eq(204)
