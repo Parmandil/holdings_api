@@ -71,6 +71,61 @@ describe HoldingResource, type: :request do
     end
   end
 
+  describe "create" do
+    subject { post "/holdings", headers: headers, params: create_data }
+
+    let(:headers) do
+      {
+        "Accept" => "application/vnd.api+json",
+        "Content-Type" => "application/vnd.api+json"
+      }
+    end
+
+    let(:holding_attributes) do
+      FactoryBot.attributes_for(:holding).transform_keys do |key|
+        key.to_s.gsub('_', '-')
+      end
+    end
+
+    let(:create_data) do
+      {
+        "data": {
+          "type": "holdings",
+          "attributes": holding_attributes
+        }
+      }.to_json
+    end
+
+    it "returns 201" do
+      expect(response.status).to eq(201)
+    end
+
+    it "creates a new holding" do
+      expect(Holding.count).to eq(6)
+    end
+
+    it "successfully sets the data it sent over on the new holding" do
+      expect(holding.cusip).to eq(holding_attributes['cusip'])
+      expect(holding.description).to eq(holding_attributes['description'])
+      expect(holding.par_value.to_f).to be_within(0.001).of(holding_attributes['par-value'])
+      expect(holding.coupon.to_f).to be_within(0.001).of(holding_attributes['coupon'])
+      expect(holding.maturity.to_i).to eq(holding_attributes['maturity'])
+      expect(holding.sector).to eq(holding_attributes['sector'])
+      expect(holding.quality).to eq(holding_attributes['quality'])
+      expect(holding.price.to_f).to be_within(0.001).of(holding_attributes['price'])
+      expect(holding.accrued.to_f).to be_within(0.001).of(holding_attributes['accrued'])
+      expect(holding.currency).to eq(holding_attributes['currency'])
+      expect(holding.market_value.to_f).to be_within(0.001).of(holding_attributes['market-value'])
+      expect(holding.weight.to_f).to be_within(0.001).of(holding_attributes['weight'])
+      expect(holding.yield.to_f).to be_within(0.001).of(holding_attributes['yield'])
+      expect(holding.dur.to_f).to be_within(0.001).of(holding_attributes['dur'])
+      expect(holding.cov.to_f).to be_within(0.001).of(holding_attributes['cov'])
+      expect(holding.oas.to_f).to be_within(0.001).of(holding_attributes['oas'])
+      expect(holding.sprd_dur.to_f).to be_within(0.001).of(holding_attributes['sprd-dur'])
+      expect(holding.pd.to_f).to be_within(0.001).of(holding_attributes['pd'])
+    end
+  end
+
   describe "delete" do
     subject { delete "/holdings/#{holding.id}", headers: headers }
 
