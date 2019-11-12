@@ -28,6 +28,19 @@ describe HoldingResource, type: :request do
       # Check a random attribute - if it's there, I'm not very worried the others won't be
       expect(data.first.dig('attributes').dig('coupon')).to be_present
     end
+
+    context "with a sort param" do
+      subject { get "/holdings", params: { sort: sort_string }, headers: headers }
+
+      let(:sort_string) { 'market-value' }
+
+      it "sorts the results" do
+        market_values = data.map do |item|
+          item.dig('attributes').dig('market-value').to_f
+        end
+        expect(market_values).to eq(market_values.sort)
+      end
+    end
   end
 
   describe "show" do

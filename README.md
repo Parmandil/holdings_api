@@ -24,6 +24,35 @@ curl -i -H "Accept: application/vnd.api+json" "http://localhost:3000/holdings"
 ```
 to get a list of all holdings in the database in JSON API format.
 
+You can sort on any available field by passing in a sort parameter to the index.
+For example, you can query "http://localhost:3000/holdings?sort=par-value,-price"
+to sort by par value ascending and secondarily by price descending.
+
+Note that quality is currently just an alphabetical sort. Eventually it will sort
+based on whether a rating is better or worse.
+
+For create, update, and sort requests, here are the attribute names you can pass in
+(and in the case of create, must pass in):
+* cusip
+* description
+* par-value
+* coupon
+* maturity
+* sector
+* quality
+* price
+* accrued
+* currency
+* market-value
+* weight
+* yield
+* dur
+* cov
+* oas
+* sprd-dur
+* pd
+See notes below for what those attributes mean.
+
 ## Notes on what the attributes of a holding mean
 
 * CUSIP: A unique bond identifier
